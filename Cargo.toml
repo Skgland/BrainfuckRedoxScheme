@@ -1,5 +1,5 @@
 [package]
-name = "BrainfuckRedoxScheme"
+name = "brainfuck_redox_scheme"
 version = "0.1.0"
 authors = ["BB20101997 <bennet-blessmann@t-online.de>"]
 edition = "2018"
