@@ -50,7 +50,7 @@ struct BrainfuckScheme {
 
 fn run_program(program_code: &str) -> Result<()> {
     let scheme = Arc::new(Mutex::new(BrainfuckScheme::new()));
-    let fd = scheme.lock().unwrap().open(program_code.as_bytes(), 0, 0, 0)?;
+    let fd = scheme.lock().unwrap().open(program_code, 0, 0, 0)?;
 
     let mut buf = [0u8; 1024];
 
@@ -211,8 +211,8 @@ impl BrainfuckProgramm {
 }
 
 impl SchemeMut for BrainfuckScheme {
-    fn open(&mut self, path: &[u8], _flags: usize, _uid: u32, _gid: u32) -> Result<usize> {
-        let program_code: Vec<char> = String::from_utf8_lossy(path).chars().collect();
+    fn open(&mut self, path: &str, _flags: usize, _uid: u32, _gid: u32) -> Result<usize> {
+        let program_code: Vec<char> = path.chars().collect();
 
         let (input_sender, input_receiver) = std::sync::mpsc::channel();
         let (output_sender, output_receiver) = std::sync::mpsc::channel();
