@@ -1,0 +1,8 @@
+[package]
+name = "daemon"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+# https://gitlab.redox-os.org/redox-os/base/-/blob/4c8727ed40dfd54264c590e4d8a5d3407c5df650/Cargo.toml#L78-79
+libc = "=0.2.180"
