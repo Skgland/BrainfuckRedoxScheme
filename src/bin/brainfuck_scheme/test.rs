@@ -1,7 +1,8 @@
 use std::{fmt::Write, io::Read as _, sync::{Arc, Mutex}};
 
 use brainfuck_redox_scheme::brainfuck::{BrainfuckInterpreter, CellSize};
-use syscall::{SchemeMut as _, error::Result};
+use syscall::error::Result;
+use redox_scheme::{CallerCtx, Id, scheme::SchemeSync};
 
 use crate::{BrainfuckScheme};
 
@@ -21,8 +22,16 @@ impl std::fmt::Debug for DisplacAscii<'_> {
 }
 
 fn run_program(program_code: &str, expected_output: &[u8]) -> Result<()> {
-    let scheme = Arc::new(Mutex::new(BrainfuckScheme::new()));
-    let fd = scheme.lock().unwrap().open(program_code, 0, 0, 0)?;
+    let scheme = BrainfuckScheme::new();
+    let root = scheme.scheme_root().unwrap();
+    let caller_ctx = CallerCtx{
+        pid: 0,
+        uid: 0,
+        gid: 0,
+        id: Id(0),
+    };
+
+    let fd = scheme.openat(root, program_code, 0, 0, &caller_ctx)?;
 
     let mut buf = [0u8; 1024];
 
@@ -51,7 +60,7 @@ fn run_program(program_code: &str, expected_output: &[u8]) -> Result<()> {
         output.extend_from_slice(&buf[..count]);
     }
 
-    scheme.lock().unwrap().close(fd)?;
+    scheme.lock().unwrap().on_close(fd);
 
     assert_eq!(DisplacAscii{data: output.as_slice()}, DisplacAscii{data: expected_output});
 
