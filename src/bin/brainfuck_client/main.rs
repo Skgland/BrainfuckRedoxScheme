@@ -1,19 +1,31 @@
 use std::fs::File;
-use std::io::{Read, Write};
-use brainfuck_redox_scheme::examples::CAT;
+use std::process::ExitCode;
 
+fn main() -> ExitCode {
 
-fn main() {
+    let Some(program) = std::env::args().nth(1) else {
+        eprintln!("First argument must be a brainfuck program!");
+        return ExitCode::FAILURE;
+    };
 
-    let mut vec_file = File::open(format!("/scheme/brainfuck/{CAT}"))
+    let mut brainfuck_file_input = File::open(format!("/scheme/brainfuck/{program}"))
         .expect("Failed to open vec file");
 
-    vec_file.write_all(b" Hello")
-        .expect("Failed to write to vec");
+    let mut brainfuck_file_output = brainfuck_file_input.try_clone().unwrap();
 
-    let mut read_into = String::new();
-    vec_file.read_to_string(&mut read_into)
-        .expect("Failed to read from vec");
+    std::thread::scope(|env| {
+        env.spawn(|| {
+            let mut stdout = std::io::stdout().lock();
+            if let Err(err) = std::io::copy(&mut brainfuck_file_output, &mut stdout) {
+                eprintln!("Failed to pipe output: {err}")
+            };
+        });
+        
+        let mut stdin = std::io::stdin().lock();
+        if let Err(err) = std::io::copy(&mut stdin,  &mut brainfuck_file_input) {
+                eprintln!("Failed to pipe input: {err}")
+        };
+    });
 
-    println!("{}", read_into); // olleH ih/
+    ExitCode::SUCCESS
 }
