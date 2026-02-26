@@ -8,5 +8,5 @@ edition = "2018"
 
 [dependencies]
 "redox_syscall"= "0.7.1"
-"redox-scheme"= "0.9.1"
+"redox-scheme"= "0.10.0"
 "daemon" = { path ="./crates/daemon" }
